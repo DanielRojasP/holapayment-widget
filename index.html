@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba Payment Widget TS</title>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center">
+
+  <button id="pay-btn" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-all">
+    Pagar ₡15,000
+  </button>
+
+  <payment-popup id="widget" amount="15000" currency="CRC"></payment-popup>
+
+  <script type="module">
+    import './src/index.ts';
+
+    const btn = document.getElementById('pay-btn');
+    const widget = document.getElementById('widget');
+
+    btn.addEventListener('click', () => {
+      widget.setAttribute('open', '');
+    });
+
+    widget.addEventListener('payment-success', (e) => {
+      console.log('Pago exitoso:', e.detail);
+      alert(`Pago confirmado vía ${e.detail.method.toUpperCase()} (ID: ${e.detail.transactionId})`);
+    });
+
+    widget.addEventListener('payment-cancelled', () => {
+      console.log('El usuario cerró el pop-up');
+    });
+  </script>
+</body>
+</html>
