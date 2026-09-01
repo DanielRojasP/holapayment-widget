@@ -21,6 +21,9 @@
     "vite": "^8.2.2"
   },
   "dependencies": {
+    "@apollo/client": "^4.2.12",
+    "@paypal/paypal-js": "^11.0.0",
+    "graphql": "^16.14.2",
     "lit": "^3.3.3"
   }
 }

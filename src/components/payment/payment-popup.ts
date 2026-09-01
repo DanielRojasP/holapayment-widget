@@ -3,6 +3,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import tailwindStyles from '../../styles.css?inline';
 import type { PaymentMethod, PaymentSuccessDetail, PaymentErrorDetail } from '../../types/paymentMethod';
 
+// Importación modular por carpeta index
+import '../paypal';
+import '../sinpe';
+import '../card';
+
 @customElement('payment-popup')
 export class PaymentPopup extends LitElement {
   static styles = unsafeCSS(tailwindStyles);
@@ -12,14 +17,17 @@ export class PaymentPopup extends LitElement {
   @property({ type: String }) currency: string = 'CRC';
   @property({ type: String, attribute: 'backend-url' }) backendUrl: string = '';
 
+  @state() private selectedMethod: PaymentMethod | null = null;
   @state() private loading: boolean = false;
 
   private handleClose(): void {
     this.open = false;
+    this.selectedMethod = null;
     this.dispatchEvent(new CustomEvent('payment-cancelled', { bubbles: true, composed: true }));
   }
 
-  private async handleSelectPayment(method: PaymentMethod): Promise<void> {
+  private async handlePaymentSubmit(e: CustomEvent<{ method: PaymentMethod; payload: Record<string, unknown> }>): Promise<void> {
+    const { method, payload } = e.detail;
     this.loading = true;
 
     try {
@@ -27,7 +35,7 @@ export class PaymentPopup extends LitElement {
         const response = await fetch(`${this.backendUrl}/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ method, amount: this.amount, currency: this.currency }),
+          body: JSON.stringify({ method, amount: this.amount, currency: this.currency, ...payload }),
         });
 
         if (!response.ok) throw new Error('Error procesando la transacción');
@@ -48,6 +56,7 @@ export class PaymentPopup extends LitElement {
         })
       );
       this.open = false;
+      this.selectedMethod = null;
     } catch (err) {
       const errorDetail: PaymentErrorDetail = {
         code: 'PAYMENT_FAILED',
@@ -63,6 +72,19 @@ export class PaymentPopup extends LitElement {
       );
     } finally {
       this.loading = false;
+    }
+  }
+
+  renderMethodForm() {
+    switch (this.selectedMethod) {
+      case 'card':
+        return html`<payment-card .loading="${this.loading}" @payment-submit="${this.handlePaymentSubmit}"></payment-card>`;
+      case 'sinpe':
+        return html`<payment-sinpe .loading="${this.loading}" @payment-submit="${this.handlePaymentSubmit}"></payment-sinpe>`;
+      case 'paypal':
+        return html`<payment-paypal .loading="${this.loading}" @payment-submit="${this.handlePaymentSubmit}"></payment-paypal>`;
+      default:
+        return null;
     }
   }
 
@@ -88,43 +110,54 @@ export class PaymentPopup extends LitElement {
             </div>
           </div>
 
-          <div class="space-y-3">
-            <button
-              ?disabled="${this.loading}"
-              @click="${() => this.handleSelectPayment('card')}"
-              class="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all font-medium text-slate-700 disabled:opacity-50"
-            >
-              <div class="flex items-center space-x-3">
-                <span>💳</span>
-                <span>Tarjeta Débito / Crédito</span>
-              </div>
-              <span>→</span>
-            </button>
+          ${!this.selectedMethod
+            ? html`
+                <div class="space-y-3">
+                  <button
+                    @click="${() => this.selectedMethod = 'card'}"
+                    class="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all font-medium text-slate-700"
+                  >
+                    <div class="flex items-center space-x-3">
+                      <span>💳</span>
+                      <span>Tarjeta Débito / Crédito</span>
+                    </div>
+                    <span>→</span>
+                  </button>
 
-            <button
-              ?disabled="${this.loading}"
-              @click="${() => this.handleSelectPayment('sinpe')}"
-              class="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition-all font-medium text-slate-700 disabled:opacity-50"
-            >
-              <div class="flex items-center space-x-3">
-                <span>📱</span>
-                <span>SINPE Móvil</span>
-              </div>
-              <span>→</span>
-            </button>
+                  <button
+                    @click="${() => this.selectedMethod = 'sinpe'}"
+                    class="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition-all font-medium text-slate-700"
+                  >
+                    <div class="flex items-center space-x-3">
+                      <span>📱</span>
+                      <span>SINPE Móvil</span>
+                    </div>
+                    <span>→</span>
+                  </button>
 
-            <button
-              ?disabled="${this.loading}"
-              @click="${() => this.handleSelectPayment('paypal')}"
-              class="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 transition-all font-medium text-slate-700 disabled:opacity-50"
-            >
-              <div class="flex items-center space-x-3">
-                <span>🅿️</span>
-                <span>PayPal</span>
-              </div>
-              <span>→</span>
-            </button>
-          </div>
+                  <button
+                    @click="${() => this.selectedMethod = 'paypal'}"
+                    class="w-full flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 transition-all font-medium text-slate-700"
+                  >
+                    <div class="flex items-center space-x-3">
+                      <span>🅿️</span>
+                      <span>PayPal</span>
+                    </div>
+                    <span>→</span>
+                  </button>
+                </div>
+              `
+            : html`
+                <div class="space-y-3">
+                  <button
+                    @click="${() => this.selectedMethod = null}"
+                    class="text-xs text-slate-500 hover:text-slate-700 mb-2 flex items-center gap-1"
+                  >
+                    ← Volver a métodos
+                  </button>
+                  ${this.renderMethodForm()}
+                </div>
+              `}
 
           ${this.loading ? html`<p class="text-center text-xs text-blue-600 mt-4 animate-pulse">Procesando solicitud...</p>` : null}
         </div>
