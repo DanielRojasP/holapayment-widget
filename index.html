@@ -10,7 +10,7 @@
     Pagar ₡15,000
   </button>
 
-  <payment-popup id="widget" amount="159000" currency="CRC"></payment-popup>
+  <payment-popup id="widget" amount="244" currency="USD"></payment-popup>
 
   <script type="module">
     import './src/index.ts';
@@ -24,7 +24,7 @@
 
     widget.addEventListener('payment-success', (e) => {
       console.log('Pago exitoso:', e.detail);
-      alert(`Pago confirmado vía ${e.detail.method.toUpperCase()} (ID: ${e.detail.transactionId})`);
+      // alert(`Pago confirmado vía ${e.detail.method.toUpperCase()} (ID: ${e.detail.transactionId})`);
     });
 
     widget.addEventListener('payment-cancelled', () => {
