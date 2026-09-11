@@ -23,7 +23,7 @@ export class PaymentPaypal extends LitElement {
     `
   ];
 
-  @property({ type: Number }) amount = 25;
+  @property({ type: Number }) amount = 20;
   @property({ type: String }) currency = 'USD';
   @property({ type: String, attribute: 'graphql-url' }) graphqlUrl = 'http://localhost:1337/graphql';
   @property({ type: String, attribute: 'client-id' }) clientId = 'AWkmnO8EG7JFWad7QXVAUiZuotgeHUm_fWvLVhtKb6PGXX34bQ7RsEp7OVl9uEM_nIqnaKoCBOuWMm1X';
