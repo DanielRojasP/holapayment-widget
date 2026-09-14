@@ -116,7 +116,6 @@ export class PaymentPopup extends LitElement {
       <!-- Backdrop con scroll seguro para pantallas pequeñas -->
       <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-md flex items-center justify-center z-[99999] p-3 sm:p-6 overflow-y-auto">
         
-        <!-- Tarjeta Modal Adaptable -->
         <div class="animate-modal bg-white rounded-3xl p-5 sm:p-7 w-full max-w-md shadow-2xl relative border border-slate-100 my-auto overflow-hidden">
           
           <!-- Botón Cerrar -->
@@ -130,49 +129,319 @@ export class PaymentPopup extends LitElement {
 
           <!-- Encabezado y Monto -->
           <div class="text-center mb-6 pt-1">
-            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold tracking-wide uppercase mb-2">
-              Resumen de Pago
+            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-md font-semibold tracking-wide uppercase mb-2">
+              Selecciona tu método de pago
             </span>
-            <div class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              <span class="text-blue-600 text-2xl sm:text-3xl font-bold">${this.currency}</span> ${this.amount}
+            <div class="flex items-center justify-center gap-1.5 mt-2 text-gray-400">
+              <svg
+                class="w-4 h-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M12 1.5a5.25 5.25 0 0 1 5.25 5.25v3h.75A2.25 2.25 0 0 1 20.25 12v8.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V12A2.25 2.25 0 0 1 6 9.75h.75v-3A5.25 5.25 0 0 1 12 1.5Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="text-xs sm:text-sm font-small ">
+                Pago 100% seguro y protegido
+              </span>
             </div>
+           
           </div>
 
-          <!-- Selección de Métodos -->
-          ${!this.selectedMethod
-            ? html`
-                <div class="space-y-2.5">
-                  <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Selecciona un método</p>              
+         <!-- PAYMENT METHODS -->
+          <div class="space-y-3">
 
-                  <!-- Opción PayPal -->
-                  <button
-                    @click="${() => this.selectedMethod = 'paypal'}"
-                    class="group w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:bg-indigo-50/50 hover:border-indigo-500 transition-all duration-200 text-left shadow-sm hover:shadow"
-                  >
-                    <div class="flex items-center space-x-3.5">
-                      <div class="w-10 h-10 rounded-xl bg-indigo-100/80 text-indigo-600 flex items-center justify-center text-lg group-hover:scale-105 transition-transform">
-                        🅿️
-                      </div>
-                      <div>
-                        <div class="font-semibold text-slate-800 text-sm group-hover:text-indigo-900">PayPal</div>
-                        <div class="text-xs text-slate-400">Pago internacional seguro</div>
-                      </div>
+            <!-- CREDIT / DEBIT CARD -->
+            <button
+              type="button"
+              @click="${() => {
+                this.selectedMethod =
+                  this.selectedMethod === 'card' ? null : 'card';
+              }}"
+              class="
+                group
+                w-full
+                text-left
+                rounded-xl
+                border
+                transition-all
+                duration-200
+                p-4
+                ${this.selectedMethod === 'card'
+                  ? 'border-teal-500 bg-teal-50/40 shadow-sm ring-1 ring-teal-500'
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}
+              "
+            >
+              <!-- HEADER CARD -->
+              <div class="flex items-center justify-between">
+
+                <div class="flex items-center gap-3">
+
+                  <!-- VISA / MASTERCARD -->
+                  <div class="flex items-center gap-1">
+
+                    <span
+                      class="text-blue-700 font-bold italic text-sm"
+                    >
+                      VISA
+                    </span>
+
+                    <span class="relative flex w-7 h-5">
+                      <span
+                        class="absolute left-0 top-0 w-5 h-5 rounded-full bg-red-500/90"
+                      ></span>
+
+                      <span
+                        class="absolute left-2 top-0 w-5 h-5 rounded-full bg-yellow-400/90"
+                      ></span>
+                    </span>
+
+                  </div>
+
+                  <div>
+                    <div class="text-sm font-medium text-slate-800">
+                      Tarjeta de Crédito / Débito
                     </div>
-                    <span class="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all text-lg font-bold">→</span>
-                  </button>
+
+                    <div class="text-xs text-slate-400 mt-0.5">
+                      Visa, Mastercard y más
+                    </div>
+                  </div>
+
                 </div>
-              `
-            : html`
-                <div>
-                  <button
-                    @click="${() => this.selectedMethod = null}"
-                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors mb-4 px-2.5 py-1 rounded-lg hover:bg-slate-100"
+
+                <!-- CHECK -->
+                <div
+                  class="
+                    w-5
+                    h-5
+                    rounded-full
+                    border
+                    flex
+                    items-center
+                    justify-center
+                    shrink-0
+                    transition-all
+                    ${this.selectedMethod === 'card'
+                      ? 'bg-teal-600 border-teal-600 text-white'
+                      : 'border-slate-300'}
+                  "
+                >
+                  ${this.selectedMethod === 'card'
+                    ? html`
+                        <svg
+                          class="w-3 h-3"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      `
+                    : null}
+                </div>
+
+              </div>
+
+              <!-- CARD FORM -->
+              ${this.selectedMethod === 'card'
+                ? html`
+                    <div
+                      class="mt-4 pt-4 border-t border-teal-100"
+                      @click="${(e: Event) => e.stopPropagation()}"
+                    >
+                      ${this.renderMethodForm()}
+                    </div>
+                  `
+                : null}
+
+            </button>
+
+
+            <!-- PAYPAL -->
+            <button
+              type="button"
+              @click="${() => {
+                this.selectedMethod =
+                  this.selectedMethod === 'paypal' ? null : 'paypal';
+              }}"
+              class="
+                group
+                w-full
+                flex
+                items-center
+                justify-between
+                p-4
+                rounded-xl
+                border
+                transition-all
+                duration-200
+                text-left
+                ${this.selectedMethod === 'paypal'
+                  ? 'border-teal-500 bg-teal-50/40 ring-1 ring-teal-500'
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}
+              "
+            >
+
+              <div class="flex items-center gap-3">
+
+                <!-- PAYPAL LOGO -->
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center"
+                >
+                  <span
+                    class="text-blue-700 font-extrabold text-2xl italic"
                   >
-                    <span>←</span> Cambiar método de pago
-                  </button>
-                  ${this.renderMethodForm()}
+                    P
+                  </span>
                 </div>
-              `}
+
+                <div>
+                  <div class="text-sm font-medium text-slate-800">
+                    PayPal
+                  </div>
+
+                  <div class="text-xs text-slate-400 mt-0.5">
+                    Paga de forma rápida y segura
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- RADIO -->
+              <div
+                class="
+                  w-5
+                  h-5
+                  rounded-full
+                  border
+                  flex
+                  items-center
+                  justify-center
+                  shrink-0
+                  ${this.selectedMethod === 'paypal'
+                    ? 'border-teal-600'
+                    : 'border-slate-300'}
+                "
+              >
+                ${this.selectedMethod === 'paypal'
+                  ? html`
+                      <div
+                        class="w-2.5 h-2.5 bg-teal-600 rounded-full"
+                      ></div>
+                    `
+                  : null}
+              </div>
+
+            </button>
+
+
+            <!-- PAYPAL FORM -->
+            ${this.selectedMethod === 'paypal'
+              ? html`
+                  <div class="px-1">
+                    ${this.renderMethodForm()}
+                  </div>
+                `
+              : null}
+
+
+            <!-- APPLE PAY -->
+            <button
+              type="button"
+              class="
+                group
+                w-full
+                flex
+                items-center
+                justify-between
+                p-4
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                hover:border-slate-300
+                hover:bg-slate-50
+                transition-all
+                duration-200
+                text-left
+              "
+            >
+
+              <div class="flex items-center gap-3">
+
+                <!-- APPLE -->
+                <div
+                  class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center"
+                >
+                  <svg
+                    class="w-6 h-6 text-black"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.79 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.97.48 7.12-.57 1.5-1.31 2.99-2.54 4.1l.01-.01z"
+                    />
+                  </svg>
+                </div>
+
+                <div>
+                  <div class="text-sm font-medium text-slate-800">
+                    Apple Pay
+                  </div>
+
+                  <div class="text-xs text-slate-400 mt-0.5">
+                    Paga con Touch ID o Face ID
+                  </div>
+                </div>
+
+              </div>
+
+              <div
+                class="w-5 h-5 rounded-full border border-slate-300 shrink-0"
+              ></div>
+
+            </button>
+
+          </div>
+
+
+          <!-- PAY BUTTON -->
+          <button
+            type="button"
+            ?disabled="${this.loading || !this.selectedMethod}"
+            @click="${() => {
+              // Aquí puedes disparar el pago cuando corresponda
+            }}"
+            class="
+              w-full
+              mt-5
+              py-3
+              px-4
+              rounded-full
+              bg-teal-600
+              hover:bg-teal-700
+              disabled:bg-slate-300
+              disabled:cursor-not-allowed
+              text-white
+              text-sm
+              font-medium
+              transition-all
+              shadow-sm
+            "
+          >
+            ${this.loading
+              ? 'Procesando...'
+              : `Pagar ${this.currency} ${this.amount}`}
+          </button>
+
 
           <!-- Estado de Carga Global -->
           ${this.loading 

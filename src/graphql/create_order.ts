@@ -12,6 +12,7 @@ export const CREATE_ORDER_MUTATION = gql`
       payment_method
       paypal_approval_url
       paypal_order_id
+      paypal_client_id
       # Si incluyes una relación como tour_operator, DEBES seleccionar subcampos:
       tour_operator {
         documentId

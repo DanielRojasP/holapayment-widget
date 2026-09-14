@@ -26,7 +26,7 @@ export class PaymentPaypal extends LitElement {
   @property({ type: Number }) amount = 20;
   @property({ type: String }) currency = 'USD';
   @property({ type: String, attribute: 'graphql-url' }) graphqlUrl = 'http://localhost:1337/graphql';
-  @property({ type: String, attribute: 'client-id' }) clientId = 'AWkmnO8EG7JFWad7QXVAUiZuotgeHUm_fWvLVhtKb6PGXX34bQ7RsEp7OVl9uEM_nIqnaKoCBOuWMm1X';
+  @property({ type: String, attribute: 'client-id' }) clientId = '';
   @property({ type: String, attribute: 'customer-email' }) customerEmail = '';
   @property({ type: String, attribute: 'tour-operator-id' }) tourOperatorId = 'si297rhfgezt3i1mfsgfkuxw';
 
@@ -35,7 +35,7 @@ export class PaymentPaypal extends LitElement {
   @state() private buttonsRendered = false;
 
   private apolloClient!: ApolloClient;
-  private currentOrderDocumentId: string | null = null; // Guardamos el ID de la orden creada
+  private currentOrderDocumentId: string | null = null;
 
   async firstUpdated() {
     if (this.graphqlUrl) {
@@ -59,26 +59,26 @@ export class PaymentPaypal extends LitElement {
           product_name: 'Pago con PayPal',
           client_email: this.customerEmail || 'test@example.com',
           tour_operator: this.tourOperatorId || undefined,
-          order_status: 'unpaid', // Estado inicial
+          order_status: 'unpaid',
         },
       },
     });
 
     const data = (result.data as Record<string, any>)?.createOrder;
     const orderId = data?.documentId || data?.id;
+    this.clientId = data?.paypal_client_id;
+    console.log('Client ID from Strapi:', this.clientId);
     const paypalOrderId = data?.paypal_order_id || data?.paypalOrderId;
 
     if (!orderId || !paypalOrderId) {
       throw new Error('No se pudo generar el ID de la orden de PayPal en Strapi.');
     }
 
-    // Almacenamos el documentId de Strapi para actualizarlo al aprobar el pago
     this.currentOrderDocumentId = orderId;
 
     return { orderId, paypalOrderId };
   }
 
-  // Método para actualizar la orden en Strapi tras la aprobación
   private async updateStrapiOrderStatus(documentId: string, paypalPayerId: string): Promise<void> {
     if (!this.apolloClient) return;
 
@@ -87,7 +87,7 @@ export class PaymentPaypal extends LitElement {
       variables: {
         documentId,
         data: {
-          order_status: 'paid', // O 'completed' según los enum de tu schema en Strapi
+          order_status: 'paid',
         },
       },
     });
@@ -98,10 +98,14 @@ export class PaymentPaypal extends LitElement {
     this.errorMsg = '';
 
     try {
+      // 1. Primero creamos la orden en Strapi para obtener el clientId y el paypalOrderId
+      const { paypalOrderId } = await this.createStrapiOrder();
+
       if (!this.clientId) {
-        throw new Error('Falta el Client ID de PayPal.');
+        throw new Error('Falta el Client ID de PayPal devuelto por Strapi.');
       }
 
+      // 2. Ahora que tenemos este.clientId, cargamos el SDK de PayPal
       const paypal = await loadScript({
         clientId: this.clientId,
         currency: this.currency,
@@ -116,6 +120,7 @@ export class PaymentPaypal extends LitElement {
 
       container.innerHTML = '';
 
+      // 3. Renderizamos los botones pasando directamente el paypalOrderId ya generado
       await paypal.Buttons({
         style: {
           layout: 'vertical',
@@ -125,24 +130,16 @@ export class PaymentPaypal extends LitElement {
         },
 
         createOrder: async () => {
-          try {
-            const { paypalOrderId } = await this.createStrapiOrder();
-            return paypalOrderId;
-          } catch (err) {
-            this.errorMsg = err instanceof Error ? err.message : 'Error al crear la orden';
-            throw err;
-          }
+          return paypalOrderId;
         },
 
         onApprove: async (data) => {
           this.processing = true;
           try {
-            // 1. Actualizamos el estado en Strapi si tenemos el ID de la orden
             if (this.currentOrderDocumentId) {
               await this.updateStrapiOrderStatus(this.currentOrderDocumentId, data.payerID || '');
             }
 
-            // 2. Notificamos al componente padre
             this.dispatchEvent(
               new CustomEvent('payment-submit', {
                 detail: {
@@ -158,7 +155,6 @@ export class PaymentPaypal extends LitElement {
               })
             );
           } catch (err) {
-            // this.errorMsg = 'El pago fue aprobado en PayPal pero falló la actualización en el servidor.';
             console.error('[Update Order Error]:', err);
           } finally {
             this.processing = false;
@@ -187,7 +183,7 @@ export class PaymentPaypal extends LitElement {
         ${this.errorMsg ? html`<p class="text-xs text-red-600 font-medium">${this.errorMsg}</p>` : null}
 
         ${!this.buttonsRendered
-        ? html`
+          ? html`
               <button
                 type="button"
                 @click="${this.handlePaypalClick}"
@@ -195,11 +191,11 @@ export class PaymentPaypal extends LitElement {
                 class="w-full py-2.5 px-4 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
               >
                 ${this.processing
-            ? html`<span class="animate-pulse">Cargando pasarela...</span>`
-            : html`<span>Cargar opciones de PayPal</span>`}
+                  ? html`<span class="animate-pulse">Cargando pasarela...</span>`
+                  : html`<span>Cargar opciones de PayPal</span>`}
               </button>
             `
-        : null}
+          : null}
 
         <div id="paypal-buttons-container" class="w-full min-h-[100px]"></div>
       </div>
