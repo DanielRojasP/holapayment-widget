@@ -27,7 +27,13 @@ export class PaymentPopup extends LitElement {
   ];
 
   @property({ type: Boolean, reflect: true }) open: boolean = false;
-  @property({ type: String }) amount: string = '20';
+  @property({ type: String }) lang: string = 'en';
+  @property({ type: String }) operator_documentId: string = '';
+  @property({ type: String }) client_name: string = '';
+  @property({ type: String }) client_phone: string = '';
+  @property({ type: String }) client_email: string = '';
+  @property({ type: String }) product_name: string = '';
+  @property({ type: Number }) amount: number = 0.0;
   @property({ type: String }) currency: string = 'USD';
   @property({ type: String, attribute: 'backend-url' }) backendUrl: string = '';
 
@@ -98,6 +104,12 @@ export class PaymentPopup extends LitElement {
       case 'paypal':
         return html`
           <payment-paypal 
+            .operator_documentId="${this.operator_documentId}"
+            .lang="${this.lang}"
+            .client_name="${this.client_name}"
+            .client_phone="${this.client_phone}"
+            .client_email="${this.client_email}"
+            .product_name="${this.product_name}"
             .amount="${Number(this.amount)}"
             .currency="${this.currency}"
             .loading="${this.loading}"
@@ -159,9 +171,9 @@ export class PaymentPopup extends LitElement {
             <button
               type="button"
               @click="${() => {
-                this.selectedMethod =
-                  this.selectedMethod === 'card' ? null : 'card';
-              }}"
+        this.selectedMethod =
+          this.selectedMethod === 'card' ? null : 'card';
+      }}"
               class="
                 group
                 w-full
@@ -172,8 +184,8 @@ export class PaymentPopup extends LitElement {
                 duration-200
                 p-4
                 ${this.selectedMethod === 'card'
-                  ? 'border-teal-500 bg-teal-50/40 shadow-sm ring-1 ring-teal-500'
-                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}
+        ? 'border-teal-500 bg-teal-50/40 shadow-sm ring-1 ring-teal-500'
+        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}
               "
             >
               <!-- HEADER CARD -->
@@ -227,12 +239,12 @@ export class PaymentPopup extends LitElement {
                     shrink-0
                     transition-all
                     ${this.selectedMethod === 'card'
-                      ? 'bg-teal-600 border-teal-600 text-white'
-                      : 'border-slate-300'}
+        ? 'bg-teal-600 border-teal-600 text-white'
+        : 'border-slate-300'}
                   "
                 >
                   ${this.selectedMethod === 'card'
-                    ? html`
+        ? html`
                         <svg
                           class="w-3 h-3"
                           viewBox="0 0 20 20"
@@ -245,14 +257,14 @@ export class PaymentPopup extends LitElement {
                           />
                         </svg>
                       `
-                    : null}
+        : null}
                 </div>
 
               </div>
 
               <!-- CARD FORM -->
               ${this.selectedMethod === 'card'
-                ? html`
+        ? html`
                     <div
                       class="mt-4 pt-4 border-t border-teal-100"
                       @click="${(e: Event) => e.stopPropagation()}"
@@ -260,7 +272,7 @@ export class PaymentPopup extends LitElement {
                       ${this.renderMethodForm()}
                     </div>
                   `
-                : null}
+        : null}
 
             </button>
 
@@ -269,9 +281,9 @@ export class PaymentPopup extends LitElement {
             <button
               type="button"
               @click="${() => {
-                this.selectedMethod =
-                  this.selectedMethod === 'paypal' ? null : 'paypal';
-              }}"
+        this.selectedMethod =
+          this.selectedMethod === 'paypal' ? null : 'paypal';
+      }}"
               class="
                 group
                 w-full
@@ -285,8 +297,8 @@ export class PaymentPopup extends LitElement {
                 duration-200
                 text-left
                 ${this.selectedMethod === 'paypal'
-                  ? 'border-teal-500 bg-teal-50/40 ring-1 ring-teal-500'
-                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}
+        ? 'border-teal-500 bg-teal-50/40 ring-1 ring-teal-500'
+        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}
               "
             >
 
@@ -327,17 +339,24 @@ export class PaymentPopup extends LitElement {
                   justify-center
                   shrink-0
                   ${this.selectedMethod === 'paypal'
-                    ? 'border-teal-600'
-                    : 'border-slate-300'}
+        ? 'bg-teal-600 border-teal-600 text-white'
+        : 'border-slate-300'}
                 "
               >
                 ${this.selectedMethod === 'paypal'
-                  ? html`
-                      <div
-                        class="w-2.5 h-2.5 bg-teal-600 rounded-full"
-                      ></div>
+        ? html` <svg
+                          class="w-3 h-3"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
                     `
-                  : null}
+        : null}
               </div>
 
             </button>
@@ -345,12 +364,12 @@ export class PaymentPopup extends LitElement {
 
             <!-- PAYPAL FORM -->
             ${this.selectedMethod === 'paypal'
-              ? html`
+        ? html`
                   <div class="px-1">
                     ${this.renderMethodForm()}
                   </div>
                 `
-              : null}
+        : null}
 
 
             <!-- APPLE PAY -->
@@ -418,8 +437,8 @@ export class PaymentPopup extends LitElement {
             type="button"
             ?disabled="${this.loading || !this.selectedMethod}"
             @click="${() => {
-              // Aquí puedes disparar el pago cuando corresponda
-            }}"
+        // Aquí puedes disparar el pago cuando corresponda
+      }}"
             class="
               w-full
               mt-5
@@ -438,14 +457,14 @@ export class PaymentPopup extends LitElement {
             "
           >
             ${this.loading
-              ? 'Procesando...'
-              : `Pagar ${this.currency} ${this.amount}`}
+        ? 'Procesando...'
+        : `Pagar ${this.currency} ${this.amount}`}
           </button>
 
 
           <!-- Estado de Carga Global -->
-          ${this.loading 
-            ? html`
+          ${this.loading
+        ? html`
                 <div class="mt-4 p-3 bg-blue-50/80 border border-blue-100 rounded-xl flex items-center justify-center space-x-2 text-blue-700 text-xs font-medium animate-pulse">
                   <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -453,8 +472,8 @@ export class PaymentPopup extends LitElement {
                   </svg>
                   <span>Procesando pago seguro...</span>
                 </div>
-              ` 
-            : null}
+              `
+        : null}
         </div>
       </div>
     `;

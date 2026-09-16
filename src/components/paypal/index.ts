@@ -6,6 +6,7 @@ import { createApolloClient } from '../../lib/apollo';
 import { CREATE_ORDER_MUTATION } from '../../graphql/create_order';
 import { UPDATE_ORDER_MUTATION } from '../../graphql/update_order_status';
 import tailwindStyles from '../../styles.css?inline';
+import { i18n } from '../../lib/i18n';
 
 @customElement('payment-paypal')
 export class PaymentPaypal extends LitElement {
@@ -23,12 +24,16 @@ export class PaymentPaypal extends LitElement {
     `
   ];
 
+  @property({ type: String }) lang = 'en';
+  @property({ type: String }) client_name = '';
+  @property({ type: String }) client_phone = '';
+  @property({ type: String }) client_email = '';
+  @property({ type: String }) product_name = '';  
   @property({ type: Number }) amount = 20;
   @property({ type: String }) currency = 'USD';
   @property({ type: String, attribute: 'graphql-url' }) graphqlUrl = 'http://localhost:1337/graphql';
   @property({ type: String, attribute: 'client-id' }) clientId = '';
-  @property({ type: String, attribute: 'customer-email' }) customerEmail = '';
-  @property({ type: String, attribute: 'tour-operator-id' }) tourOperatorId = 'si297rhfgezt3i1mfsgfkuxw';
+  @property({ type: String, attribute: 'tour-operator-id' }) operator_documentId = 'si297rhfgezt3i1mfsgfkuxw';
 
   @state() private processing = false;
   @state() private errorMsg = '';
@@ -36,6 +41,12 @@ export class PaymentPaypal extends LitElement {
 
   private apolloClient!: ApolloClient;
   private currentOrderDocumentId: string | null = null;
+
+willUpdate(changedProperties: Map<string, any>) {
+    if (changedProperties.has('lang')) {
+      i18n.setLanguage(this.lang);
+    }
+  }
 
   async firstUpdated() {
     if (this.graphqlUrl) {
@@ -57,8 +68,10 @@ export class PaymentPaypal extends LitElement {
           currency: this.currency,
           payment_method: 'paypal',
           product_name: 'Pago con PayPal',
-          client_email: this.customerEmail || 'test@example.com',
-          tour_operator: this.tourOperatorId || undefined,
+          client_name: this.client_name || '',
+          client_phone: this.client_phone || '0000000000',
+          client_email: this.client_email || 'test@example.com',
+          tour_operator: this.operator_documentId || undefined,
           order_status: 'unpaid',
         },
       },
@@ -178,7 +191,7 @@ export class PaymentPaypal extends LitElement {
   render() {
     return html`
       <div class="p-4 border border-slate-200 rounded-2xl bg-slate-50 font-sans space-y-3 w-full box-border">
-        <h4 class="font-semibold text-slate-700 text-sm">Pago con PayPal</h4>
+        
 
         ${this.errorMsg ? html`<p class="text-xs text-red-600 font-medium">${this.errorMsg}</p>` : null}
 
@@ -191,8 +204,8 @@ export class PaymentPaypal extends LitElement {
                 class="w-full py-2.5 px-4 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
               >
                 ${this.processing
-                  ? html`<span class="animate-pulse">Cargando pasarela...</span>`
-                  : html`<span>Cargar opciones de PayPal</span>`}
+                  ? html`<span class="animate-pulse">${i18n.t('paypal.loading')}</span>`
+                  : html`<span>${i18n.t('paypal.loadOptions')}</span>`}
               </button>
             `
           : null}

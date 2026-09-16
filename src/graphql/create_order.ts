@@ -7,6 +7,8 @@ export const CREATE_ORDER_MUTATION = gql`
       number
       product_name
       client_email
+      client_name
+      client_phone
       total_amount
       currency
       payment_method

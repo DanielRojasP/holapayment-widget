@@ -1,0 +1,7 @@
+{
+  "paypal": {
+    "title": "Pago con PayPal",
+    "loading": "Cargando pasarela...",
+    "loadOptions": "Cargar opciones de PayPal"
+  }
+}

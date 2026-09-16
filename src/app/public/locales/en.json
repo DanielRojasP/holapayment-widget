@@ -1,0 +1,7 @@
+{
+  "paypal": {
+    "title": "Pay with PayPal",
+    "loading": "Loading gateway...",
+    "loadOptions": "Load PayPal options"
+  }
+}

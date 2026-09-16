@@ -2,7 +2,7 @@ export type PaymentMethod = 'card' | 'sinpe' | 'paypal';
 
 export interface PaymentSuccessDetail {
   method: PaymentMethod;
-  amount: string;
+  amount: Number;
   currency: string;
   transactionId?: string;
 }
